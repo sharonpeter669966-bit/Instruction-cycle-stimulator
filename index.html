@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Instruction Cycle Simulator</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;800&family=Source+Sans+3:wght@400;600&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<header class="top">
+  <h1>Instruction Cycle Simulator</h1>
+  <p>Write any program. Step through fetch, decode, execute and PC update.</p>
+</header>
+
+<main class="layout">
+
+  <!-- LEFT: program input -->
+  <section class="card">
+    <h2>Your program</h2>
+    <p class="hint">One instruction per line. Registers R0 to R3, values 0 to 255, data memory addresses 0 to 15. Text after <code>;</code> is a comment.</p>
+    <textarea id="src" spellcheck="false" rows="9" aria-label="Program source"></textarea>
+    <p id="err" class="err" role="alert"></p>
+    <div class="row">
+      <button id="btnExample" class="ghost">Load example</button>
+      <button id="btnClear" class="ghost">Clear</button>
+    </div>
+    <details class="ref">
+      <summary>Instruction reference</summary>
+      <table>
+        <tr><td><code>MOV R1, 10</code></td><td>Put a number or another register into R1</td></tr>
+        <tr><td><code>LOAD R1, 3</code></td><td>R1 = data memory[3]</td></tr>
+        <tr><td><code>STORE R1, 3</code></td><td>data memory[3] = R1</td></tr>
+        <tr><td><code>ADD R1, R2</code></td><td>R1 = R1 + R2 (or a number)</td></tr>
+        <tr><td><code>SUB R1, R2</code></td><td>R1 = R1 - R2 (or a number)</td></tr>
+        <tr><td><code>AND / OR</code></td><td>Bitwise, same format as ADD</td></tr>
+        <tr><td><code>HALT</code></td><td>Stop execution</td></tr>
+      </table>
+      <p class="hint">Values are 8-bit. Results wrap around at 256. Flags: Z = zero, C = carry or borrow, S = top bit set.</p>
+    </details>
+
+    <h2>Program memory</h2>
+    <ol id="progList" class="prog"></ol>
+  </section>
+
+  <!-- RIGHT: CPU -->
+  <section class="card">
+    <h2>CPU state</h2>
+
+    <div class="regs">
+      <div class="reg wide"><span>PC</span><b id="pc">00</b></div>
+      <div class="reg wide"><span>IR</span><b id="ir">-</b></div>
+      <label class="reg"><span>R0</span><input id="r0" type="number" min="0" max="255"></label>
+      <label class="reg"><span>R1</span><input id="r1" type="number" min="0" max="255"></label>
+      <label class="reg"><span>R2</span><input id="r2" type="number" min="0" max="255"></label>
+      <label class="reg"><span>R3</span><input id="r3" type="number" min="0" max="255"></label>
+    </div>
+
+    <div class="flags">
+      <span>Flags</span>
+      <b id="fZ">Z 0</b><b id="fC">C 0</b><b id="fS">S 0</b>
+    </div>
+
+    <h2>Current stage</h2>
+    <ol class="stages">
+      <li id="st0" class="s-fetch">Fetch</li>
+      <li id="st1" class="s-decode">Decode</li>
+      <li id="st2" class="s-exec">Execute</li>
+      <li id="st3" class="s-pc">Update PC</li>
+    </ol>
+
+    <div class="alu" aria-label="ALU">
+      <div><small>A</small><b id="aluA">-</b></div>
+      <div><small>Operation</small><b id="aluOp">-</b></div>
+      <div><small>B</small><b id="aluB">-</b></div>
+      <div class="result"><small>Result</small><b id="aluR">-</b></div>
+    </div>
+
+    <div id="status" class="status idle" aria-live="polite">Ready</div>
+
+    <div class="controls">
+      <button id="btnStep" class="b-step">Next step</button>
+      <button id="btnRun" class="b-run">Run</button>
+      <button id="btnPause" class="b-pause">Pause</button>
+      <button id="btnReset" class="b-reset">Reset</button>
+    </div>
+    <label class="speed">Speed
+      <input id="speed" type="range" min="1" max="10" value="5">
+    </label>
+
+    <h2>Data memory</h2>
+    <div id="memGrid" class="mem"></div>
+
+    <h2>Trace</h2>
+    <ul id="log" class="log"></ul>
+  </section>
+
+</main>
+
+<script src="script.js"></script>
+</body>
+</html>
